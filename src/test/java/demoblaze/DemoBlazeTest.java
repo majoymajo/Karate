@@ -6,6 +6,6 @@ class DemoBlazeTest {
 
     @Karate.Test
     Karate auth() {
-        return Karate.run("demoblaze/auth");
+        return Karate.run("auth").relativeTo(getClass());
     }
 }
