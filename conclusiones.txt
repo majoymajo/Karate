@@ -1,10 +1,36 @@
 Hallazgos y conclusiones (completar tras ejecutar)
 
-- El endpoint /signup responde HTTP 200 tanto para alta como para usuario ya existente.
-- Para usuario ya existente, típicamente retorna un JSON con campo errorMessage.
-- El endpoint /login responde HTTP 200 y para credenciales correctas retorna un token (campo Auth_token o similar).
-- Para credenciales incorrectas, típicamente retorna un JSON con campo errorMessage.
+Hallazgos del API (observados en el reporte HTML)
+- /signup responde HTTP 200 tanto para alta como para usuario ya existente.
+	- Alta exitosa: el cuerpo de respuesta es "" (string JSON vacío).
+		Evidencia: target/karate-reports/demoblaze.auth.html (se ve como &quot;&quot;).
+	- Usuario existente: retorna un JSON con { "errorMessage": "This user already exist." }.
+		Evidencia: target/karate-reports/demoblaze.auth.html (bloque de response del segundo signup).
+
+- /login responde HTTP 200 tanto para credenciales correctas como incorrectas.
+	- Credenciales correctas: el cuerpo de respuesta viene como string JSON con el formato "Auth_token: <token>".
+		Evidencia: target/karate-reports/demoblaze.auth.html.
+	- Credenciales incorrectas: retorna JSON con { "errorMessage": "Wrong password." }.
+		Evidencia: target/karate-reports/demoblaze.auth.html.
 
 Observaciones
-- Los servicios no usan códigos 4xx para validación de credenciales, por lo que la verificación debe basarse en el cuerpo de respuesta.
+
+- Los servicios no usan códigos 4xx para validación de credenciales; la verificación debe basarse en el cuerpo de respuesta.
 - Los reportes de Karate (target/karate-reports) contienen evidencia completa de entradas/salidas.
+
+Depuración: causa raíz y solución
+- Causa raíz 1: dependencia inexistente.
+	- El proyecto referenciaba `karate-junit5:1.5.0`, versión no publicada en Maven Central, lo que impedía compilar/ejecutar.
+	- Solución: fijar Karate a 1.4.1 en pom.xml.
+
+- Causa raíz 2: incompatibilidad de versiones JUnit.
+	- Al cambiar Karate a 1.4.1, el proyecto forzaba JUnit Jupiter 5.10.2, provocando error de clases durante el descubrimiento de tests.
+	- Solución: alinear JUnit Jupiter a 5.9.3.
+
+- Causa raíz 3: resolución del feature por classpath.
+	- El runner no encontraba `demoblaze/auth.feature` en algunas combinaciones de versión/Classpath.
+	- Solución: ejecutar el feature relativo a la clase (`Karate.run("auth").relativeTo(getClass())`).
+
+- Causa raíz 4: formato real de respuestas del API.
+	- Algunas respuestas vienen como strings JSON ("" en signup y "Auth_token: ..." en login), no como objetos JSON.
+	- Solución: normalizar/parsing en el feature (`parseBody` + `extractToken`) para asertar correctamente.
