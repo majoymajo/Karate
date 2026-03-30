@@ -1,0 +1,10 @@
+Hallazgos y conclusiones (completar tras ejecutar)
+
+- El endpoint /signup responde HTTP 200 tanto para alta como para usuario ya existente.
+- Para usuario ya existente, típicamente retorna un JSON con campo errorMessage.
+- El endpoint /login responde HTTP 200 y para credenciales correctas retorna un token (campo Auth_token o similar).
+- Para credenciales incorrectas, típicamente retorna un JSON con campo errorMessage.
+
+Observaciones
+- Los servicios no usan códigos 4xx para validación de credenciales, por lo que la verificación debe basarse en el cuerpo de respuesta.
+- Los reportes de Karate (target/karate-reports) contienen evidencia completa de entradas/salidas.
